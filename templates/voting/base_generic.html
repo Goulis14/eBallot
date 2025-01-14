@@ -1,0 +1,21 @@
+{% load static %}  <!-- Φόρτωση του static tag -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}eBallot{% endblock %}</title>
+    <link href="{% static 'startbootstrap-sb-admin-2-gh-pages/css/sb-admin-2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'startbootstrap-sb-admin-2-gh-pages/css/style.css' %}" rel="stylesheet">
+</head>
+<body id="page-top">
+    <div id="wrapper">
+        {% block content %}
+        <!-- Content will go here from home.html -->
+        {% endblock %}
+    </div>
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'startbootstrap-sb-admin-2-gh-pages/js/sb-admin-2.min.js' %}"></script>
+</body>
+</html>

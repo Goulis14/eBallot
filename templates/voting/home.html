@@ -1,0 +1,126 @@
+{% extends 'voting/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Navbar -->
+<nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>                        
+      </button>
+      <a class="navbar-brand" href="#">eBallot</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#about">ABOUT</a></li>
+        <li><a href="#services">SERVICES</a></li>
+        <li><a href="#contact">CONTACT</a></li>
+        {% if user.is_authenticated %}
+              <li><a href="{% url 'profile' %}">PROFILE</a></li>  <!-- Profile link when logged in -->
+               <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-link">LOG OUT</button>
+               </form>
+            {% else %}
+              <li><a href="{% url 'login' %}">LOG IN</a></li>
+              <li><a href="{% url 'sign_up' %}">SIGN UP</a></li>
+            {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<div class="container-fluid bg-1 text-center">
+  <h1 class="margin">Welcome to eBallot</h1>
+  <p>Secure. Transparent. Reliable.</p>
+  <img src="{% static 'img/bird.jpg' %}" class="img-responsive img-circle margin" style="display:inline" alt="Secure Voting" width="350" height="350">
+  <br>
+    {% if user.is_authenticated %}
+        <!-- Profile Section for Logged-in Users -->
+        <div class="profile-section">
+          <h2>Welcome, {{ user.username }}!</h2>
+          <p>Email: {{ user.email }}</p>
+          <p>Role: {{ user.role }}</p>
+          <p>Full Name: {{ user.first_name }} {{ user.last_name }}</p>
+          
+        </div>
+      {% else %}
+        <!-- If not logged in, show the CTA for signing up or logging in -->
+        <a href="/signup/" class="btn btn-success btn-lg margin">Get Started</a>
+      {% endif %}
+    </div>
+</div>
+    
+<!-- Active Elections Section -->
+   {% if user.is_authenticated %}
+  <div id="active-elections" class="container-fluid bg-2 text-center">
+    <h2 class="margin">Active Elections</h2>
+    {% if active_elections %}
+      <ul>
+        {% for election in active_elections %}
+          <li>
+          
+            {{ election.title }}
+            <p>{{ election.description }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No active elections at the moment.</p>
+      {% if user.is_staff %}
+        <p>
+          <a href="{% url 'create_election' %}" class="btn btn-primary">Create Election</a>
+        </p>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endif %}
+
+
+<!-- About Section -->
+<div id="about" class="container-fluid bg-2 text-center">
+  <h2 class="margin">Who We Are</h2>
+  <p>eBallot is a modern voting platform designed to make elections secure, efficient, and transparent. Our mission is to empower organizations with tools for seamless voting and election management.</p>
+</div>
+
+<!-- Services Section -->
+<div id="services" class="container-fluid bg-3 text-center">    
+  <h2 class="margin">What We Offer</h2>
+  <div class="row">
+    <div class="col-sm-4">
+      <h4>Secure Voting</h4>
+      <p>State-of-the-art encryption to ensure every vote is safe.</p>
+      <img src="{% static 'img/birds1.jpg' %}" class="img-responsive margin" style="width:100%" alt="Secure Voting">
+    </div>
+    <div class="col-sm-4">
+      <h4>Transparent Results</h4>
+      <p>Real-time results with complete transparency.</p>
+      <img src="{% static 'img/birds2.jpg' %}" class="img-responsive margin" style="width:100%" alt="Transparent Results">
+    </div>
+    <div class="col-sm-4">
+      <h4>Easy Management</h4>
+      <p>Simple tools for creating and managing elections.</p>
+      <img src="{% static 'img/birds3.jpg' %}" class="img-responsive margin" style="width:100%" alt="Easy Management">
+    </div>
+  </div>
+</div>
+
+<!-- Call to Action Section -->
+<div class="container-fluid bg-1 text-center">
+  <h2 class="margin">Ready to Transform Your Elections?</h2>
+  <p>Join thousands of organizations using eBallot for secure and seamless elections.</p>
+  <a href="/signup/" class="btn btn-primary btn-lg">Sign Up</a>
+  <a href="/login/" class="btn btn-default btn-lg">Log In</a>
+</div>
+
+<!-- Footer -->
+<footer id="contact" class="container-fluid bg-4 text-center">
+  <h4>Contact Us</h4>
+  <p>Email: support@eballot.com | Phone: +1-800-555-1234</p>
+  <p>&copy; 2025 eBallot. All Rights Reserved.</p>
+</footer>
+{% endblock %}

@@ -1,0 +1,84 @@
+/* General form styling for both login and signup */
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Form input fields */
+form input, form textarea, form select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    color: #333;
+    background-color: #fff;
+}
+
+/* Focused input fields */
+form input:focus, form textarea:focus, form select:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+}
+
+/* Form labels */
+form label {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Submit button */
+form button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+}
+
+/* Hover effect for submit button */
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Error message styling */
+form .error {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px; /* Positioning the error message below the password field */
+}
+
+/* Success message styling */
+form .success {
+    color: green;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/* Specific styling for both login and signup page */
+.login-page, .signup-page {
+    width: 100%;
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333; /* Changed to a darker color for better visibility */
+}

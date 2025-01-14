@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}eBallot{% endblock %}</title>
+
+    <!-- Load static files -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    
+    <style>
+        body {
+            font: 20px Montserrat, sans-serif;
+            line-height: 1.8;
+            color: #f5f6f7;
+        }
+        p {font-size: 16px;}
+        .margin {margin-bottom: 45px;}
+        .navbar {
+            margin-bottom: 0;
+            border-radius: 0;
+            letter-spacing: 5px;
+        }
+        .navbar-nav li a:hover {
+            color: #1abc9c !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Navigation bar -->
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>                        
+                </button>
+                <a class="navbar-brand" href="#">eBallot</a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'election_list' %}">Elections</a></li>
+                   
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'profile' %}">Profile</a></li>
+                        <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link">Log Out</button>
+                        </form>
+                    {% else %}
+                        <li><a href="{% url 'login' %}">Log In</a></li>
+                        <li><a href="{% url 'sign_up' %}">Sign Up</a></li>
+                    {% endif %}
+                    {% if user.is_staff %}
+                        <li><a href="{% url 'create_election' %}">Create Election</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Section -->
+    <div class="container">
+        {% block content %}
+        <!-- The specific content of each page will be inserted here -->
+        {% endblock %}
+    </div>
+
+    <!-- Footer Section -->
+    <footer id="contact" class="container-fluid bg-4 text-center">
+        <h4>Contact Us</h4>
+        <p>Email: support@eballot.com | Phone: +1-800-555-1234</p>
+        <p>&copy; 2025 eBallot. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!-- templates/voting/profile.html -->
+{% extends 'voting/base.html' %}
+{% load static %}
+
+{% block title %}User Profile - eBallot{% endblock %}
+
+{% block content %}
+<!-- Profile Section -->
+<div class="container">
+    <h2>Welcome, {{ user.username }}!</h2>
+    <p>Email: {{ user.email }}</p>
+    <p>Role: {{ user.role }}</p>
+
+   
+</div>
+
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'voting/base.html' %}
+{% block content %}
+    <h2>Election Results for "{{ election.title }}"</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Candidate</th>
+                <th>Votes</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for candidate in results %}
+                <tr>
+                    <td>{{ candidate.name }}</td>
+                    <td>{{ candidate.votes }}</td>
+                    <td>{{ candidate.vote_percentage|floatformat:2 }}%</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

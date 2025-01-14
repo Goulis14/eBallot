@@ -1,0 +1,18 @@
+{% extends 'voting/base.html' %}
+{% block content %}
+    <h2>{{ election.title }}</h2>
+    <p>{{ election.description }}</p>
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset>
+            <legend>Select a Candidate</legend>
+            {% for candidate in candidates %}
+                <div>
+                    <input type="radio" name="candidate" value="{{ candidate.id }}" id="candidate{{ candidate.id }}">
+                    <label for="candidate{{ candidate.id }}">{{ candidate.name }}</label>
+                </div>
+            {% endfor %}
+        </fieldset>
+        <button type="submit" class="btn btn-primary">Submit Vote</button>
+    </form>
+{% endblock %}

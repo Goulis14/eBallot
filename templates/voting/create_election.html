@@ -1,0 +1,73 @@
+{% extends 'voting/base.html' %}
+{% block content %}
+<div class="container">
+    <h2>Create a New Election</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.title.label_tag }}
+            {{ form.title }}
+        </div>
+        <div class="form-group">
+            {{ form.description.label_tag }}
+            {{ form.description }}
+        </div>
+        <div class="form-group">
+            {{ form.start_date.label_tag }}
+            {{ form.start_date }}
+        </div>
+        <div class="form-group">
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+        </div>
+        <div class="form-check form-check-inline">
+            {{ form.is_active }}
+            {{ form.is_active.label_tag }}
+        </div>
+
+        <h3>Candidate(s)</h3>
+        <div id="candidate-formset">
+            {{ formset.management_form }}
+            {% for form in formset %}
+                <div class="candidate-form">
+                    <div class="form-group">
+                        {{ form.name.label_tag }}
+                        {{ form.name }}
+                    </div>
+                    <button type="button" class="btn btn-danger remove-candidate">Remove</button>
+                </div>
+            {% endfor %}
+        </div>
+        <button type="button" id="add-candidate" class="btn btn-secondary">Add Candidate</button>
+        
+        <button type="submit" class="btn btn-primary">Create Election</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const formsetContainer = document.getElementById('candidate-formset');
+        const addCandidateBtn = document.getElementById('add-candidate');
+        const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+
+        addCandidateBtn.addEventListener('click', function () {
+            const formIndex = parseInt(totalForms.value);
+            const emptyForm = formsetContainer.querySelector('.candidate-form').outerHTML;
+            const newForm = emptyForm.replace(/-0-/g, `-${formIndex}-`).replace(/__prefix__/g, formIndex);
+            formsetContainer.insertAdjacentHTML('beforeend', newForm);
+            totalForms.value = formIndex + 1;
+        });
+
+        formsetContainer.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-candidate')) {
+                e.target.closest('.candidate-form').remove();
+                const forms = formsetContainer.querySelectorAll('.candidate-form');
+                totalForms.value = forms.length;
+                forms.forEach((form, index) => {
+                    form.innerHTML = form.innerHTML.replace(/-\d+-/g, `-${index}-`);
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

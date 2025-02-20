@@ -1,3 +1,4 @@
+# voting/views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
@@ -8,6 +9,8 @@ from .forms import SignUpForm, ElectionForm, CandidateFormSet
 from . import models
 from .models import Election, Candidate, Vote
 from django.contrib import messages
+from django.db.models import Count, Sum
+from django.utils import timezone
 
 
 # Αρχική Σελίδα - Λίστα Ψηφοφοριών
@@ -25,21 +28,6 @@ def election_detail(request, election_id):
         Vote.objects.create(user=request.user, election=election, candidate=candidate)
         return redirect('results', election_id=election.id)
     return render(request, 'voting/election_detail.html', {'election': election})
-
-
-# Σελίδα Αποτελεσμάτων
-@login_required
-def results(request, election_id):
-    election = get_object_or_404(Election, id=election_id)
-    results = election.candidates.annotate(votes=models.Count('vote'))
-
-    total_votes = results.aggregate(total_votes=models.Sum('votes'))['total_votes'] or 0
-
-    # Calculate the percentage of total votes for each candidate
-    for candidate in results:
-        candidate.vote_percentage = (candidate.votes / total_votes * 100) if total_votes > 0 else 0
-
-    return render(request, 'voting/results.html', {'election': election, 'results': results})
 
 
 def sign_up(request):
@@ -102,8 +90,9 @@ def profile(request):
 # View for listing all active elections
 @login_required
 def home(request):
-    active_elections = Election.objects.filter(is_active=True)
-    print(active_elections)  # Should print the list of active elections
+    current_time = timezone.now()
+    active_elections = Election.objects.filter(start_date__lte=current_time, end_date__gte=current_time)
+
     return render(request, 'voting/home.html', {'active_elections': active_elections})
 
 
@@ -130,25 +119,23 @@ def election_detail(request, election_id):
 # Only Admins can create an election
 @login_required
 def create_election(request):
+    if request.user.role != 'Admin':
+        messages.error(request, "You do not have permission to create elections.")
+        return redirect('home')
+
     if request.method == 'POST':
         form = ElectionForm(request.POST)
-        formset = CandidateFormSet(request.POST)  # Bind the inline formset to the POST data
+        formset = CandidateFormSet(request.POST)
 
         if form.is_valid() and formset.is_valid():
-            # Save the election and associate it with the logged-in user
             election = form.save(commit=False)
             election.created_by = request.user
             election.save()
-
-            # Save the candidates, associating them with the election
             formset.instance = election
             formset.save()
-
-            # Show success message and redirect
             messages.success(request, "Election and candidates created successfully!")
             return redirect('home')
         else:
-            # If either form or formset isn't valid, show error messages
             messages.error(request, "There was an issue creating the election. Please fix the errors below.")
     else:
         form = ElectionForm()
@@ -157,6 +144,7 @@ def create_election(request):
     return render(request, 'voting/create_election.html', {
         'form': form,
         'formset': formset,
+        'empty_form': formset.empty_form.as_p()  # Include empty form for JavaScript
     })
 
 
@@ -171,3 +159,21 @@ def election_list(request):
         messages.info(request, "No active elections at the moment.")
 
     return render(request, 'voting/election_list.html', {'active_elections': active_elections})
+
+
+@login_required
+def results(request, election_id):
+    election = get_object_or_404(Election, id=election_id)
+
+    # Count votes for each candidate
+    candidate_results = Candidate.objects.filter(election=election).annotate(votes=Count('vote'))
+
+    # Calculate the total number of votes
+    total_votes = candidate_results.aggregate(total_votes=Sum('votes'))['total_votes'] or 0
+
+    # Calculate the percentage of total votes for each candidate
+    for candidate in candidate_results:
+        candidate.vote_percentage = (candidate.votes / total_votes * 100) if total_votes > 0 else 0
+
+    return render(request, 'voting/results.html',
+                  {'election': election, 'candidate_results': candidate_results, 'total_votes': total_votes})

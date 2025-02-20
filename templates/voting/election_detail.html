@@ -1,18 +1,20 @@
-{% extends 'voting/base.html' %}
+{% extends 'voting/secondary_base.html' %}
 {% block content %}
-    <h2>{{ election.title }}</h2>
-    <p>{{ election.description }}</p>
-    <form method="POST">
-        {% csrf_token %}
-        <fieldset>
-            <legend>Select a Candidate</legend>
-            {% for candidate in candidates %}
-                <div>
-                    <input type="radio" name="candidate" value="{{ candidate.id }}" id="candidate{{ candidate.id }}">
-                    <label for="candidate{{ candidate.id }}">{{ candidate.name }}</label>
-                </div>
-            {% endfor %}
-        </fieldset>
-        <button type="submit" class="btn btn-primary">Submit Vote</button>
-    </form>
+    <div class="container">
+        <h2>{{ election.title }}</h2>
+        <p>{{ election.description }}</p>
+        <form method="POST" class="mt-4">
+            {% csrf_token %}
+            <fieldset class="border p-3">
+                <legend>Select a Candidate</legend>
+                {% for candidate in candidates %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="candidate" value="{{ candidate.id }}" id="candidate{{ candidate.id }}">
+                        <label class="form-check-label" for="candidate{{ candidate.id }}">{{ candidate.name }}</label>
+                    </div>
+                {% endfor %}
+            </fieldset>
+            <button type="submit" class="btn btn-primary mt-3">Submit Vote</button>
+        </form>
+    </div>
 {% endblock %}

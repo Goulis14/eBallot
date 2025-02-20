@@ -1,22 +1,24 @@
-{% extends 'voting/base.html' %}
-{% load static %}
+{% extends 'voting/secondary_base.html' %}
 {% block content %}
-<div class="container">
-  <h2 class="text-center">Active Elections</h2>
+    <div class="container">
+        <h2 class="text-center mb-4">Active Elections</h2>
 
-  {% if active_elections %}
-    <ul class="list-group">
-      {% for election in active_elections %}
-        <li class="list-group-item">
-          <a href="{% url 'election_detail' election.id %}">
-            {{ election.title }}
-          </a>
-          <p>{{ election.description }}</p>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No active elections at the moment.</p>
-  {% endif %}
-</div>
+        {% if active_elections %}
+            <div class="row">
+                {% for election in active_elections %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ election.title }}</h5>
+                                <p class="card-text">{{ election.description|truncatewords:20 }}</p>
+                                <a href="{% url 'election_detail' election.id %}" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-center">No active elections at the moment.</p>
+        {% endif %}
+    </div>
 {% endblock %}

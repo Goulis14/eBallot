@@ -1,22 +1,41 @@
 {% extends 'voting/base.html' %}
 {% block content %}
-    <h2>Election Results for "{{ election.title }}"</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Candidate</th>
-                <th>Votes</th>
-                <th>Percentage</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for candidate in results %}
-                <tr>
-                    <td>{{ candidate.name }}</td>
-                    <td>{{ candidate.votes }}</td>
-                    <td>{{ candidate.vote_percentage|floatformat:2 }}%</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="container">
+    <h2 class="text-center">Election Results for "{{ election.title }}"</h2>
+
+    <div class="panel panel-default">
+        <div class="panel-heading"><strong>Total Votes Cast: {{ total_votes }}</strong></div>
+        <div class="panel-body">
+            <table class="table table-striped table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Candidate</th>
+                        <th>Votes</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for candidate in results %}
+                        <tr {% if candidate.votes == results.0.votes %} class="success" {% endif %}>
+                            <td>{{ candidate.name }}</td>
+                            <td>{{ candidate.votes }}</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-info" role="progressbar"
+                                        style="width: {{ candidate.vote_percentage }}%">
+                                        {{ candidate.vote_percentage|floatformat:2 }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <a href="{% url 'election_list' %}" class="btn btn-primary">Back to Elections</a>
+    </div>
+</div>
 {% endblock %}

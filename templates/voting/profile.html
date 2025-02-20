@@ -1,17 +1,12 @@
-<!-- templates/voting/profile.html -->
-{% extends 'voting/base.html' %}
-{% load static %}
-
-{% block title %}User Profile - eBallot{% endblock %}
+{% extends 'voting/secondary_base.html' %}
+{% block title %}User Profile - Voting System{% endblock %}
 
 {% block content %}
-<!-- Profile Section -->
-<div class="container">
-    <h2>Welcome, {{ user.username }}!</h2>
-    <p>Email: {{ user.email }}</p>
-    <p>Role: {{ user.role }}</p>
-
-   
-</div>
-
+    <div class="container">
+        <h2>Welcome, {{ user.username }}!</h2>
+        <div class="list-group">
+            <p class="list-group-item">Email: {{ user.email }}</p>
+            <p class="list-group-item">Role: {{ user.role }}</p>
+        </div>
+    </div>
 {% endblock %}

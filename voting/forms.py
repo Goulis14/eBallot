@@ -1,16 +1,22 @@
+# voting/forms.py
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import inlineformset_factory
+from django_countries.widgets import CountrySelectWidget
 from .models import CustomUser, Election, Candidate
 
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True)
     role = forms.ChoiceField(choices=CustomUser._meta.get_field('role').choices, required=True)
+    gender = forms.ChoiceField(choices=CustomUser.GENDER_CHOICES, required=True)  # Added gender field
+    age_group = forms.ChoiceField(choices=CustomUser.AGE_GROUPS, required=True)    # Added age_group field
+    country = forms.ChoiceField(choices=[], required=False)
+    region = forms.ChoiceField(choices=[], required=False)
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password1', 'password2', 'role']
+        fields = ['username', 'email', 'password1', 'password2', 'role', 'gender', 'age_group', 'country', 'region']
 
 
 class ElectionForm(forms.ModelForm):
@@ -38,7 +44,8 @@ class ElectionForm(forms.ModelForm):
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'end_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Enter a brief description'}),
+            'description': forms.Textarea(
+                attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Enter a brief description'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter election title'}),
         }
 

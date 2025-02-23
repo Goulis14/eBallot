@@ -1,4 +1,13 @@
 # voting/views.py
+import logging
+from django.conf import settings
+import os
+import json
+from django.http import JsonResponse
+import requests
+from django_countries import countries
+from django.contrib.messages import get_messages
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
@@ -88,10 +97,24 @@ def profile(request):
 
 
 # View for listing all active elections
-@login_required
+
+logger = logging.getLogger(__name__)
+
+
 def home(request):
     current_time = timezone.now()
-    active_elections = Election.objects.filter(start_date__lte=current_time, end_date__gte=current_time)
+    print(f"Current time: {current_time}")
+
+    active_elections = Election.objects.filter(
+        start_date__lte=current_time,
+        end_date__gte=current_time,
+        is_active=True
+    )
+
+    print(f"Active Elections in View: {active_elections.count()}")
+    for e in active_elections:
+        print(
+            f"Election in View - ID: {e.id}, Title: {e.title}, Start Date: {e.start_date}, End Date: {e.end_date}, Active: {e.is_active}")
 
     return render(request, 'voting/home.html', {'active_elections': active_elections})
 
@@ -100,15 +123,21 @@ def home(request):
 def election_detail(request, election_id):
     election = get_object_or_404(Election, id=election_id)
 
-    # Check if the user has already voted in this election
+    # Clear old messages to prevent duplicates
+    storage = get_messages(request)
+    for _ in storage:
+        pass  # This ensures previous messages are cleared
+
+    # Check if the user has already voted
     if Vote.objects.filter(user=request.user, election=election).exists():
-        messages.info(request, "You have already voted in this election.")
-        return redirect('results', election_id=election.id)
+        messages.info(request, "You have already voted in this election. Redirecting to results.")
+        return redirect('results', election_id=election.id)  # Redirect to results page
 
     if request.method == 'POST':
         candidate_id = request.POST.get('candidate')
         candidate = get_object_or_404(Candidate, id=candidate_id)
         Vote.objects.create(user=request.user, election=election, candidate=candidate)
+        messages.success(request, "Your vote has been recorded! Redirecting to results.")
         return redirect('results', election_id=election.id)
 
     # Fetch all candidates for the election
@@ -177,3 +206,43 @@ def results(request, election_id):
 
     return render(request, 'voting/results.html',
                   {'election': election, 'candidate_results': candidate_results, 'total_votes': total_votes})
+
+
+# Function to read countries and states data from the JSON file
+# Load countries from the JSON file
+def get_countries(request):
+    json_path = os.path.join(settings.BASE_DIR, 'static/data/countries+states.json')
+
+    try:
+        with open(json_path, encoding="utf-8") as json_file:
+            countries_data = json.load(json_file)
+
+        countries_list = [{"name": country["name"], "iso2": country["iso2"]} for country in countries_data]
+        return JsonResponse({"countries": countries_list}, safe=False)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+# Fetch countries list
+def get_regions(request):
+    country_iso2 = request.GET.get('country_iso2', None)
+
+    if not country_iso2:
+        return JsonResponse({"error": "Country code is required"}, status=400)
+
+    json_path = os.path.join(settings.BASE_DIR, 'static/data/countries+states.json')
+
+    try:
+        with open(json_path, encoding="utf-8") as json_file:
+            countries_data = json.load(json_file)
+
+        for country in countries_data:
+            if country["iso2"] == country_iso2:
+                regions_list = [{"id": region["id"], "name": region["name"]} for region in country.get("states", [])]
+                return JsonResponse({"regions": regions_list}, safe=False)
+
+        return JsonResponse({"error": "Country not found"}, status=404)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

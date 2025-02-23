@@ -1,23 +1,40 @@
-{% extends 'voting/base.html' %}
+{% extends 'voting/secondary_base.html' %}
 {% load static %}
 
 {% block content %}
 <div class="container">
     <div class="signup-page">
         <h2>Create an Account</h2>
-        <form method="POST">
+        <form method="POST" id="signup-form">
             {% csrf_token %}
             
+            <!-- Username Field -->
             <div class="form-group">
                 <label for="id_username">Username:</label>
                 {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="error">
+                        {% for error in form.username.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
 
+            <!-- Email Field -->
             <div class="form-group">
                 <label for="id_email">Email:</label>
                 {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="error">
+                        {% for error in form.email.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
 
+            <!-- Password Fields -->
             <div class="form-group">
                 <label for="id_password1">Password:</label>
                 {{ form.password1 }}
@@ -42,13 +59,117 @@
                 {% endif %}
             </div>
 
+           
+
+            <!-- Gender Field -->
             <div class="form-group">
-                <label for="id_role">Role:</label>
-                {{ form.role }}
+                <label for="id_gender">Gender:</label>
+                {{ form.gender }}
+                {% if form.gender.errors %}
+                    <div class="error">
+                        {% for error in form.gender.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
 
+            <!-- Age Group Field -->
+            <div class="form-group">
+                <label for="id_age_group">Age Group:</label>
+                {{ form.age_group }}
+                {% if form.age_group.errors %}
+                    <div class="error">
+                        {% for error in form.age_group.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Country Dropdown -->
+            <div class="form-group">
+                <label for="id_country">Country:</label>
+                <select id="country" name="country" class="form-control">
+                    <option value="">Select Country</option>
+                </select>
+                {% if form.country.errors %}
+                    <div class="error">
+                        {% for error in form.country.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Region Dropdown -->
+            <div class="form-group">
+                <label for="id_region">Region:</label>
+                <select id="region" name="region" class="form-control">
+                    <option value="">Select Region</option>
+                </select>
+                {% if form.region.errors %}
+                    <div class="error">
+                        {% for error in form.region.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Submit Button -->
             <button type="submit" class="btn btn-primary">Sign Up</button>
         </form>
     </div>
 </div>
+
+<!-- JavaScript for Country & Region Selection -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const countryDropdown = document.getElementById("country");
+    const regionDropdown = document.getElementById("region");
+
+    function fetchCountries() {
+        fetch("/get-countries/")
+            .then(response => response.json())
+            .then(data => {
+                countryDropdown.innerHTML = '<option value="">Select Country</option>';
+                data.countries.forEach(country => {
+                    let option = document.createElement("option");
+                    option.value = country.iso2;
+                    option.textContent = country.name;
+                    countryDropdown.appendChild(option);
+                });
+            })
+            .catch(error => console.error("Error fetching countries:", error));
+    }
+
+    function fetchRegions(countryISO2) {
+        regionDropdown.innerHTML = '<option value="">Loading...</option>';
+        fetch(`/get-regions/?country_iso2=${countryISO2}`)
+            .then(response => response.json())
+            .then(data => {
+                regionDropdown.innerHTML = '<option value="">Select Region</option>';
+                data.regions.forEach(region => {
+                    let option = document.createElement("option");
+                    option.value = region.id;
+                    option.textContent = region.name;
+                    regionDropdown.appendChild(option);
+                });
+            })
+            .catch(error => console.error("Error fetching regions:", error));
+    }
+
+    countryDropdown.addEventListener("change", function () {
+        if (this.value) {
+            fetchRegions(this.value);
+        } else {
+            regionDropdown.innerHTML = '<option value="">Select Region</option>';
+        }
+    });
+
+    fetchCountries();
+});
+</script>
+
 {% endblock %}

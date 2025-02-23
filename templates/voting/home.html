@@ -20,6 +20,7 @@
         <li><a href="#about">ABOUT</a></li>
         <li><a href="#services">SERVICES</a></li>
         <li><a href="#contact">CONTACT</a></li>
+       <li><a href="{% url 'election_list' %}">ELECTIONS</a></li>
         {% if user.is_authenticated %}
               <li><a href="{% url 'profile' %}">PROFILE</a></li>  <!-- Profile link when logged in -->
                <form method="POST" action="{% url 'logout' %}" style="display: inline;">
@@ -58,31 +59,21 @@
 </div>
 
 <!-- Active Elections Section -->
-   {% if user.is_authenticated %}
-  <div id="active-elections" class="container-fluid bg-2 text-center">
-    <h2 class="margin">Active Elections</h2>
-    {% if active_elections %}
-      <ul>
-        {% for election in active_elections %}
-          <li>
 
-            {{ election.title }}
-            <p>{{ election.description }}</p>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No active elections at the moment.</p>
-      {% if user.is_staff %}
-        <p>
-          <a href="{% url 'create_election' %}" class="btn btn-primary">Create Election</a>
-        </p>
-      {% endif %}
-    {% endif %}
-  </div>
-{% endif %}
+<<h2>Debugging Elections</h2>
+<p>Active elections count: {{ active_elections|length }}</p>
+<p>Active elections count in template: {{ active_elections|length }}</p>
+<p>{{ active_elections }}</p>  <!-- See the raw object -->
 
-
+{% for election in active_elections %}
+    <p>Election: {{ election.title }} (ID: {{ election.id }})</p>
+    <p>Description: {{ election.description }}</p>
+    <p>Start Date: {{ election.start_date }}</p>
+    <p>End Date: {{ election.end_date }}</p>
+    <hr>
+{% empty %}
+    <p>No active elections found.</p>
+{% endfor %}
 <!-- About Section -->
 <div id="about" class="container-fluid bg-2 text-center">
   <h2 class="margin">Who We Are</h2>

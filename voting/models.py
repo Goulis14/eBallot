@@ -2,23 +2,70 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.conf import settings
+from django_countries.fields import CountryField  # Import django-countries
 
 
 class CustomUser(AbstractUser):
+    GENDER_CHOICES = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('Prefer not to say', 'Prefer not to say')
+    ]
+
+    AGE_GROUPS = [
+        ('18-25', '18-25'),
+        ('26-35', '26-35'),
+        ('36-45', '36-45'),
+        ('46-60', '46-60'),
+        ('60+', '60+'),
+    ]
+
     role = models.CharField(
         max_length=20,
         choices=[('Admin', 'Admin'), ('Voter', 'Voter')],
         default='Voter'
     )
 
-    groups = models.ManyToManyField(
-        Group,
-        related_name='customuser_set',  # Προσαρμοσμένο related_name για αποφυγή σύγκρουσης
+    gender = models.CharField(
+        max_length=20,
+        choices=GENDER_CHOICES,
+        default='Prefer not to say'
+    )
+
+    age_group = models.CharField(
+        max_length=10,
+        choices=AGE_GROUPS,
+        null=True,
         blank=True
     )
+
+    country = CountryField(
+        blank_label="(Select Country)",
+        null=True,
+        blank=True
+    )  # Using CountryField from django-countries
+
+    region = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )  # We will update this later to dynamically show regions based on the country
+
+    city = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
+
+    groups = models.ManyToManyField(
+        Group,
+        related_name='customuser_set',
+        blank=True
+    )
+
     user_permissions = models.ManyToManyField(
         Permission,
-        related_name='customuser_set',  # Προσαρμοσμένο related_name για αποφυγή σύγκρουσης
+        related_name='customuser_set',
         blank=True
     )
 

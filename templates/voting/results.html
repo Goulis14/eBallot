@@ -1,40 +1,38 @@
-{% extends 'voting/base.html' %}
+{% extends 'voting/secondary_base.html' %}
+
 {% block content %}
 <div class="container">
-    <h2 class="text-center">Election Results for "{{ election.title }}"</h2>
+    <h2 class="text-center mb-4">Election Results for "{{ election.title }}"</h2>
 
-    <div class="panel panel-default">
-        <div class="panel-heading"><strong>Total Votes Cast: {{ total_votes }}</strong></div>
-        <div class="panel-body">
-            <table class="table table-striped table-bordered">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Candidate</th>
-                        <th>Votes</th>
-                        <th>Percentage</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for candidate in results %}
-                        <tr {% if candidate.votes == results.0.votes %} class="success" {% endif %}>
-                            <td>{{ candidate.name }}</td>
-                            <td>{{ candidate.votes }}</td>
-                            <td>
-                                <div class="progress">
-                                    <div class="progress-bar progress-bar-info" role="progressbar"
-                                        style="width: {{ candidate.vote_percentage }}%">
-                                        {{ candidate.vote_percentage|floatformat:2 }}%
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    {% if messages %}
+        <div class="alert alert-info">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title text-center">Total Votes Cast: <strong>{{ total_votes }}</strong></h4>
+            <div class="list-group">
+                {% for candidate in candidate_results %}
+                    <div class="list-group-item">
+                        <h5 class="mb-1">{{ candidate.name }}</h5>
+                        <p class="mb-1"><strong>Votes:</strong> {{ candidate.votes }}</p>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-info" role="progressbar"
+                                 style="width: {{ candidate.vote_percentage }}%">
+                                {{ candidate.vote_percentage|floatformat:2 }}%
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
-    <div class="text-center">
+    <div class="text-center mt-4">
         <a href="{% url 'election_list' %}" class="btn btn-primary">Back to Elections</a>
     </div>
 </div>

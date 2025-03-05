@@ -1,0 +1,73 @@
+def results(request, election_id):
+    election = get_object_or_404(Election, id=election_id)
+    candidates = Candidate.objects.filter(election=election)
+
+    total_votes = Vote.objects.filter(election=election).count()
+    total_voters = election.total_voters
+    votes_cast = Vote.objects.filter(election=election).values('user').distinct().count()
+
+    turnout_percentage = (votes_cast / total_voters * 100) if total_voters else 0
+
+    candidate_results = candidates.annotate(vote_count=Count('vote'))
+
+    results = []
+    votes_json = {'labels': [], 'values': []}
+
+    for candidate in candidate_results:
+        percentage = (candidate.vote_count / total_votes * 100) if total_votes > 0 else 0
+        results.append({
+            'name': candidate.name,
+            'votes': candidate.vote_count,
+            'percentage': percentage,
+        })
+        votes_json['labels'].append(candidate.name)
+        votes_json['values'].append(percentage)
+
+    # Age Group Demographics
+    age_demographics = models.CustomUser.objects.filter(
+        vote__election=election
+    ).values('age_group').annotate(count=Count('id'))
+
+    age_demographics_data = [{'age_group': d['age_group'], 'count': d['count']} for d in age_demographics]
+
+    # Gender Demographics
+    gender_demographics = models.CustomUser.objects.filter(
+        vote__election=election
+    ).values('gender').annotate(count=Count('id'))
+
+    gender_demographics_data = [{'gender': d['gender'], 'count': d['count']} for d in gender_demographics]
+
+    # Country Demographics
+    country_demographics = models.CustomUser.objects.filter(
+        vote__election=election
+    ).values('country').annotate(count=Count('id'))
+
+    country_demographics_data = [{'country': d['country'], 'count': d['count']} for d in country_demographics]
+
+    # Compute how each group voted
+    gender_vote_summary = Vote.objects.filter(election=election) \
+        .values("user__gender", "candidate__name") \
+        .annotate(votes=Count("id"))
+
+    country_vote_summary = Vote.objects.filter(election=election) \
+        .values("user__country", "candidate__name") \
+        .annotate(votes=Count("id"))
+
+    age_vote_summary = Vote.objects.filter(election=election) \
+        .values("user__age_group", "candidate__name") \
+        .annotate(votes=Count("id"))
+
+    return render(request, 'voting/results.html', {
+        'election': election,
+        'results': results,
+        'total_votes': total_votes,
+        'total_voters': total_voters,
+        'turnout_percentage': turnout_percentage,
+        'age_demographics': age_demographics_data,
+        'gender_demographics': gender_demographics_data,
+        'country_demographics': country_demographics_data,
+        'gender_vote_summary': gender_vote_summary,
+        'country_vote_summary': country_vote_summary,
+        'age_vote_summary': age_vote_summary,
+    })
+

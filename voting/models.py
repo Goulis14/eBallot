@@ -2,7 +2,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.conf import settings
-from django_countries.fields import CountryField  # Import django-countries
 
 
 class CustomUser(AbstractUser):
@@ -33,29 +32,14 @@ class CustomUser(AbstractUser):
     )
 
     age_group = models.CharField(
-        max_length=10,
-        choices=AGE_GROUPS,
-        null=True,
-        blank=True
+        max_length=10,choices=AGE_GROUPS, null=True, blank=True
     )
 
-    country = CountryField(
-        blank_label="(Select Country)",
-        null=True,
-        blank=True
-    )  # Using CountryField from django-countries
-
-    region = models.CharField(
+    country = models.CharField(
         max_length=100,
         null=True,
-        blank=True
-    )  # We will update this later to dynamically show regions based on the country
-
-    city = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True
-    )
+        blank=True)  # Change from CountryField to CharField
+    region = models.CharField(max_length=100, null=True, blank=True)
 
     groups = models.ManyToManyField(
         Group,
@@ -77,7 +61,11 @@ class Election(models.Model):
     end_date = models.DateTimeField()
     is_active = models.BooleanField(default=False)
     active_from = models.DateTimeField(null=True, blank=True)
+    total_voters = models.IntegerField(default=0)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def calculate_total_voters(self):
+        return self.vote_set.values('user').distinct().count()
 
 
 class Candidate(models.Model):

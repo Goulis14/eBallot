@@ -1,22 +1,54 @@
 # voting/forms.py
+import json
+import os
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import inlineformset_factory
 from django_countries.widgets import CountrySelectWidget
+
+from eBallot import settings
 from .models import CustomUser, Election, Candidate
 
 
 class SignUpForm(UserCreationForm):
+    first_name = forms.CharField(max_length=30, required=True,
+                                 widget=forms.TextInput(attrs={'placeholder': 'First Name'}))
+    last_name = forms.CharField(max_length=30, required=True,
+                                widget=forms.TextInput(attrs={'placeholder': 'Last Name'}))
+
     email = forms.EmailField(required=True)
     role = forms.ChoiceField(choices=CustomUser._meta.get_field('role').choices, required=True)
-    gender = forms.ChoiceField(choices=CustomUser.GENDER_CHOICES, required=True)  # Added gender field
-    age_group = forms.ChoiceField(choices=CustomUser.AGE_GROUPS, required=True)    # Added age_group field
-    country = forms.ChoiceField(choices=[], required=False)
+    gender = forms.ChoiceField(choices=CustomUser.GENDER_CHOICES, required=True)
+    age_group = forms.ChoiceField(choices=CustomUser.AGE_GROUPS, required=True)
+
+    # We will set choices for these fields dynamically later
+    country = forms.ChoiceField(choices=[], required=True)
     region = forms.ChoiceField(choices=[], required=False)
 
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'password1', 'password2', 'role', 'gender', 'age_group', 'country', 'region']
+
+    def __init__(self, *args, **kwargs):
+        super(SignUpForm, self).__init__(*args, **kwargs)
+
+        # Load countries dynamically from a JSON file
+        countries_data = []
+        with open("static/data/countries+states.json", "r", encoding="utf-8") as f:
+            countries_data = json.load(f)
+
+        # Populate the 'country' dropdown with country names
+        self.fields['country'].choices = [(country_data['name'], country_data['name'])
+                                          for country_data in countries_data]
+
+        # If the country is pre-selected, load regions for that country
+        if 'country' in kwargs.get('data', {}):
+            selected_country = kwargs['data']['country']
+            for country_data in countries_data:
+                if country_data['name'] == selected_country:
+                    self.fields['region'].choices = [(region, region) for region in country_data['states']]
+                    break
 
 
 class ElectionForm(forms.ModelForm):

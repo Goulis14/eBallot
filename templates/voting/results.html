@@ -1,39 +1,265 @@
 {% extends 'voting/secondary_base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container">
-    <h2 class="text-center mb-4">Election Results for "{{ election.title }}"</h2>
+    <h1>Election Results</h1>
+    
+    <h2>Votes Per Candidate</h2>
+    <canvas id="votesChart" style="max-width: 600px; max-height: 300px; width: 100%; height: 300px;"></canvas>
+    
+    <h2>Vote Distribution</h2>
+    <canvas id="pieChart" style="max-width: 600px; max-height: 300px; width: 100%; height: 300px;"></canvas>
+    <p>The pie chart above shows the percentage of votes received by each candidate in the election. Each slice represents a candidate's share of the total votes cast. A larger slice indicates a higher percentage of votes.</p>
+    
+    <h2>Voter Turnout</h2>
+    <p>Total Voters: {{ total_voters }}</p>
+    <p>Votes Cast: {{ total_votes }}</p>
+    <p>Turnout Percentage: {{ turnout_percentage }}%</p>
 
-    {% if messages %}
-        <div class="alert alert-info">
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        </div>
+    {% if age_demographics %}
+    <h2>Voter Demographics</h2>
+    <canvas id="demographicsChart"></canvas>
     {% endif %}
+    
+    {% if historical_data %}
+    <h2>Historical Comparison</h2>
+    <canvas id="historicalChart"></canvas>
+    {% endif %}
+    {% if gender_demographics %}
+    <h2>Gender Demographics</h2>
+    <canvas id="genderChart"></canvas>
+    {% endif %}
+    
+    {% if country_demographics %}
+    <h2>Country Demographics</h2>
+    <canvas id="countryChart"></canvas>
+    {% endif %}
+      {% if age_vote_summary %}
+    <h2>Votes by Age Group</h2>
+    <canvas id="ageVoteChart"></canvas>
+    {% endif %}
+    
+    {% if gender_vote_summary %}
+    <h2>Votes by Gender</h2>
+    <canvas id="genderVoteChart"></canvas>
+    {% endif %}
+    
+    {% if country_vote_summary %}
+    <h2>Votes by Country</h2>
+    <canvas id="countryVoteChart"></canvas>
+    {% endif %}
+    
+  
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const votesData = {
+            labels: [{% for result in results %}"{{ result.name }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            values: [{% for result in results %}{{ result.votes }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        };
 
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title text-center">Total Votes Cast: <strong>{{ total_votes }}</strong></h4>
-            <div class="list-group">
-                {% for candidate in candidate_results %}
-                    <div class="list-group-item">
-                        <h5 class="mb-1">{{ candidate.name }}</h5>
-                        <p class="mb-1"><strong>Votes:</strong> {{ candidate.votes }}</p>
-                        <div class="progress">
-                            <div class="progress-bar progress-bar-info" role="progressbar"
-                                 style="width: {{ candidate.vote_percentage }}%">
-                                {{ candidate.vote_percentage|floatformat:2 }}%
-                            </div>
-                        </div>
-                    </div>
+        // Define different colors for each bar in the first chart
+        const colors = [
+            'rgba(255, 99, 132, 0.6)', // Red
+            'rgba(54, 162, 235, 0.6)', // Blue
+            'rgba(255, 206, 86, 0.6)', // Yellow
+            'rgba(75, 192, 192, 0.6)', // Green
+            'rgba(153, 102, 255, 0.6)', // Purple
+            'rgba(255, 159, 64, 0.6)'  // Orange
+        ];
+
+        const ctxVotes = document.getElementById('votesChart').getContext('2d');
+        new Chart(ctxVotes, {
+            type: 'bar',
+            data: {
+                labels: votesData.labels,
+                datasets: [{
+                    label: 'Votes',
+                    data: votesData.values,
+                    backgroundColor: colors.slice(0, votesData.labels.length) // Assign colors dynamically based on the number of candidates
+                }]
+            }
+        });
+
+        const pieData = {
+            labels: [{% for result in results %}"{{ result.name }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            values: [{% for result in results %}{{ result.percentage }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        };
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: pieData.labels,
+                datasets: [{
+                    data: pieData.values,
+                    backgroundColor: ['red', 'blue', 'green', 'yellow', 'purple']
+                }]
+            },
+            options: {
+                responsive: true,
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+
+        {% if age_demographics %}
+        const demographicsData = {
+            labels: [{% for demographic in age_demographics %}"{{ demographic.age_group }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            values: [{% for demographic in age_demographics %}{{ demographic.count }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        };
+        const ctxDemographics = document.getElementById('demographicsChart').getContext('2d');
+        new Chart(ctxDemographics, {
+            type: 'bar',
+            data: {
+                labels: demographicsData.labels,
+                datasets: [{
+                    label: 'Voter Count',
+                    data: demographicsData.values,
+                    backgroundColor: 'rgba(255, 159, 64, 0.6)'
+                }]
+            }
+        });
+        {% endif %}
+
+        {% if gender_demographics %}
+        const genderData = {
+            labels: [{% for demographic in gender_demographics %}"{{ demographic.gender }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            values: [{% for demographic in gender_demographics %}{{ demographic.count }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        };
+
+        const ctxGender = document.getElementById('genderChart').getContext('2d');
+        new Chart(ctxGender, {
+            type: 'pie',
+            data: {
+                labels: genderData.labels,
+                datasets: [{
+                    data: genderData.values,
+                    backgroundColor: ['pink', 'blue', 'gray']
+                }]
+            }
+        });
+        {% endif %}
+
+        {% if country_demographics %}
+        const countryData = {
+            labels: [{% for demographic in country_demographics %}"{{ demographic.country }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            values: [{% for demographic in country_demographics %}{{ demographic.count }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        };
+        
+        const ctxCountry = document.getElementById('countryChart').getContext('2d');
+        new Chart(ctxCountry, {
+            type: 'bar',
+            data: {
+                labels: countryData.labels,
+                datasets: [{
+                    label: 'Voters per Country',
+                    data: countryData.values,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                }]
+            }
+        });
+        {% endif %}
+
+        {% if historical_data %}
+        const historicalData = {
+            labels: [{% for data in historical_data %}"{{ data.election_year }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            values: [{% for data in historical_data %}{{ data.total_votes }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        };
+        const ctxHistorical = document.getElementById('historicalChart').getContext('2d');
+        new Chart(ctxHistorical, {
+            type: 'line',
+            data: {
+                labels: historicalData.labels,
+                datasets: [{
+                    label: 'Votes in Previous Elections',
+                    data: historicalData.values,
+                    borderColor: 'blue',
+                    fill: false
+                }]
+            }
+        });
+        {% endif %}
+
+     {% if gender_vote_summary %}
+const genderVoteData = {
+    labels: [{% for demographic in gender_demographics %}"{{ demographic.gender }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+datasets: [
+        {% for candidate in results %}
+        {
+            label: "{{ candidate.name }}",
+            data: [
+                {% for group in gender_vote_summary %}
+                    {% if group.candidate__name == candidate.name %}
+                        {{ group.votes }}{% if not forloop.last %}, {% endif %}
+                    {% endif %}
                 {% endfor %}
-            </div>
-        </div>
-    </div>
+            ],
+            backgroundColor: `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.6)`
+        }{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ]
+};
+new Chart(document.getElementById('genderVoteChart').getContext('2d'), {
+    type: 'bar',
+    data: genderVoteData,
+    options: { responsive: true }
+});
+{% endif %}
 
-    <div class="text-center mt-4">
-        <a href="{% url 'election_list' %}" class="btn btn-primary">Back to Elections</a>
-    </div>
-</div>
+{% if country_vote_summary %}
+const countryVoteData = {
+    labels: [{% for demographic in country_demographics %}"{{ demographic.country }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+    datasets: [
+        {% for candidate in results %}
+        {
+            label: "{{ candidate.name }}",
+            data: [
+                {% for group in country_vote_summary %}
+                    {% if group.candidate__name == candidate.name %}
+                        {{ group.votes }}{% if not forloop.last %}, {% endif %}
+                    {% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.6)`
+        }{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ]
+};
+new Chart(document.getElementById('countryVoteChart').getContext('2d'), {
+    type: 'bar',
+    data: countryVoteData,
+    options: { responsive: true }
+});
+{% endif %}
+{% if age_vote_summary %}
+const ageVoteData = {
+    labels: [{% for demographic in age_demographics %}"{{ demographic.age_group }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+    
+    datasets: [
+        {% for candidate in results %}
+        {
+            label: "{{ candidate.name }}",
+            data: [
+                {% for group in age_vote_summary %}
+                    {% if group.candidate__name == candidate.name %}
+                        {{ group.votes }}{% if not forloop.last %}, {% endif %}
+                    {% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.6)`
+        }{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ]
+};
+new Chart(document.getElementById('ageVoteChart').getContext('2d'), {
+    type: 'bar',
+    data: ageVoteData,
+    options: { responsive: true }
+});
+{% endif %}
+
+
+    </script>
 {% endblock %}

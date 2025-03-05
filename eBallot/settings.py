@@ -9,12 +9,13 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import sys
+import locale
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+OPENAI_API_KEY = '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'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -27,6 +28,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+
+
+# Ensure UTF-8 encoding is used everywhere
+DEFAULT_CHARSET = 'utf-8'
+FILE_CHARSET = 'utf-8'
+
+# Set the system locale to UTF-8
+try:
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+except locale.Error:
+    pass  # Ignore errors if locale isn't available
 
 # Application definition
 
